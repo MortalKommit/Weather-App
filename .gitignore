@@ -3,3 +3,9 @@ static/.idea/misc.xml
 static/.idea/modules.xml
 static/.idea/static.iml
 static/.idea/inspectionProfiles/profiles_settings.xml
+.gitignore
+.idea/misc.xml
+.idea/modules.xml
+.idea/web.iml
+.idea/inspectionProfiles/profiles_settings.xml
+.vscode/settings.json
