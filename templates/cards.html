@@ -1,0 +1,17 @@
+{% if weather is defined %}
+{% for city_weather in weather %}
+<div class="{{ 'card ' + city_weather.time_of_day }}">
+    <div class="delete-wrapper">
+        <form action="/delete/{{ city_weather.id }}" method="POST">
+            <input type="hidden" name="id" value="">
+            <button class="delete-button" type="submit">&#10006;</button>
+        </form>
+    </div>
+    <div class="degrees"><span>{{ city_weather.temp }}<span class="celsius"> °C</span></span></div>
+    <div class="time"> {{ city_weather.time_now }}</div>
+    <div class="state">{{ city_weather.condition }}</div>
+    <div class="city">{{ city_weather.name }}</div>
+</div>
+{% endfor %}
+{% endif %}
+

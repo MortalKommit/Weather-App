@@ -13,15 +13,12 @@ db = SQLAlchemy(app)
 app.secret_key = os.urandom(32)
 
 
-'''
-Uncomment if not running Check
 # Fetch new files if updated, override cache https://stackoverflow.com/a/54164514
 def dir_last_updated(folder):
     return str(max(os.path.getmtime(os.path.join(root_path, f))
                    for root_path, dirs, files in os.walk(folder)
                    for f in files))
 
-'''
 
 class City(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -88,16 +85,13 @@ def list_cities():
         session.setdefault('api_key', os.environ.get('WEATHER_API_KEY'))
         session.setdefault('weather_endpoint', "https://api.openweathermap.org/data/2.5/weather")
 
-        session['weather_info'] = []
         for city in City.query.all():
             session['weather_info'].append(
                 {'id': city.id, **call_weather_api(city.name, session['weather_endpoint'], session['api_key'])})
         app.logger.info(session['weather_info'])
 
         return render_template('index.html', weather=session['weather_info'],
-                               # Uncomment if not running Check
-                               # last_updated=dir_last_updated('./static'))
-                               )
+                               last_updated=dir_last_updated('./static'))
     except requests.HTTPError as e:
         app.logger.error(str(e))
         if e.response.status_code == 404:
@@ -136,18 +130,19 @@ def add_city():
                 flash("The city doesn't exist!")
             else:
                 flash("Request failure, please try again")
-        return redirect('/')
+        return render_template('cards.html', weather=session['weather_info'])
 
 
 @app.route('/delete/<city_id>', methods=['POST'])
 def delete(city_id):
+    success = True
     try:
         city = City.query.filter_by(id=city_id).first()
         db.session.delete(city)
         db.session.commit()
     except Exception as e:
         app.logger.error(str(e))
-    return redirect('/')
+    return jsonify(success)
 
 
 # don't change the following way to run flask:
