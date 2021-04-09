@@ -178,7 +178,7 @@ input {
 
 ::-webkit-scrollbar-track {
   background:  linear-gradient(0deg, #836273 0%, #373252 100%);
-
+}
 ::-webkit-scrollbar-thumb {
   background: #888;
 }
