@@ -9,4 +9,4 @@ static/.idea/inspectionProfiles/profiles_settings.xml
 .idea/web.iml
 .idea/inspectionProfiles/profiles_settings.xml
 .vscode/settings.json
-API_KEY.txt
+weather.db
