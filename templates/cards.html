@@ -8,9 +8,10 @@
         </form>
     </div>
     <div class="degrees"><span>{{ city_weather.temp }}<span class="celsius"> °C</span></span></div>
-    <div class="time"> {{ city_weather.time_now }}</div>
     <div class="state">{{ city_weather.condition }}</div>
+    <div class="condition"><img src="https://openweathermap.org/img/wn/{{ city_weather.conditions_icon }}.png" /></div>
     <div class="city">{{ city_weather.name }}</div>
+    <div class="time">{{ city_weather.time_now }}</div>
 </div>
 {% endfor %}
 {% endif %}

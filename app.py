@@ -8,6 +8,7 @@ import os
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///weather.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 db = SQLAlchemy(app)
 app.secret_key = os.urandom(32)
@@ -99,8 +100,6 @@ def list_cities():
                                                    session['api_key'])})
         app.logger.info(session['weather_info'])
 
-        return render_template('index.html', weather=session['weather_info'],
-                               last_updated=dir_last_updated('./static'))
     except requests.HTTPError as e:
         app.logger.error(str(e))
         if e.response.status_code == 404:
@@ -111,6 +110,9 @@ def list_cities():
     except requests.RequestException as e:
         app.logger.error(str(e))
         flash("Unable to connect to Weather API site, please try later!")
+
+    return render_template('index.html', weather=session['weather_info'],
+                           last_updated=dir_last_updated('./static'))
 
 
 @app.route('/add', methods=['POST'])
@@ -142,28 +144,28 @@ def add_city():
         except IntegrityError as e:
             db.session.rollback()
             app.logger.error(str(e))
-            flash('The city has already been added to the list!')
+            return jsonify('The city has already been added to the list!'), 400
 
         except requests.HTTPError as e:
             app.logger.error(str(e))
             if e.response.status_code == 404:
-                flash("The city doesn't exist!")
+                return jsonify("The city doesn't exist!"), 400
             else:
-                flash("Request failure, please try again")
+                return jsonify("Request failure, please try again"), 400
         return render_template('cards.html', weather=session['weather_info'])
 
 
 @app.route('/delete/<city_id>', methods=['POST'])
 def delete(city_id):
-    success = True
     try:
         city = City.query.filter_by(id=city_id).first()
         db.session.delete(city)
         db.session.commit()
     except Exception as e:
         app.logger.error(str(e))
-        success = False
-    return jsonify({city_id: success})
+        return jsonify('Error deleting card: may have already been removed'), \
+            400
+    return jsonify(city_id), 200
 
 
 # don't change the following way to run flask:

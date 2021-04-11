@@ -145,6 +145,7 @@ input {
 	padding: 0.5vw;
 	border-radius: 0.4vw;
 	margin-top: -3%;
+	display: none;
 }
 
 .celsius {

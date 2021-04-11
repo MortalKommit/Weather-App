@@ -15,13 +15,8 @@
 </head>
 <body>
 <div class="form">
-    {% with message = get_flashed_messages() %}
-    {% if message %}
     <div class="alert alert-primary" role="alert">
-        {{message[0]}}
     </div>
-    {% endif %}
-    {% endwith %}
     <form action="/add" method="POST" name="add_city">
         <input type="text" placeholder="Enter a city name" name="city_name" id="input-city">
         <button type="submit" class="submit-button">Add</button>
