@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash, session, jsonify
+from flask import Flask, render_template, request, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone
@@ -13,7 +13,8 @@ db = SQLAlchemy(app)
 app.secret_key = os.urandom(32)
 
 
-# Fetch new files if updated, override cache https://stackoverflow.com/a/54164514
+# Fetch new files if updated, override cache
+# https://stackoverflow.com/a/54164514
 def dir_last_updated(folder):
     return str(max(os.path.getmtime(os.path.join(root_path, f))
                    for root_path, dirs, files in os.walk(folder)
@@ -41,11 +42,14 @@ def get_daytime(time, response):
     :return: str day/evening-morning/night
     """
     hr_gap = 1
-    if response['sys']['sunrise'] < time <= response['sys']['sunset'] - 3600 * hr_gap:
+    if response['sys']['sunrise'] < time <= response['sys']['sunset'] \
+            - 3600 * hr_gap:
         return "day"
     # if hr_gap before and after sunrise or hr_gap before after sunset
-    elif response['sys']['sunrise'] - 3600 * hr_gap < time < response['sys']['sunrise'] + 3600 * hr_gap or \
-            response['sys']['sunset'] - 3600 * hr_gap < time < response['sys']['sunset'] + 3600 * hr_gap:
+    elif response['sys']['sunrise'] - 3600 * hr_gap < time < \
+        response['sys']['sunrise'] + 3600 * hr_gap or \
+            response['sys']['sunset'] - 3600 * hr_gap < time < \
+            response['sys']['sunset'] + 3600 * hr_gap:
         return "evening-morning"
     else:
         return "night"
@@ -74,8 +78,10 @@ def call_weather_api(city, url, key, units="metric") -> dict:
         return {'name': resp['name'], 'condition': resp['weather'][0]['main'],
                 'temp': str(resp['main']['temp']),
                 'conditions_icon': resp['weather'][0]['icon'],
-                'time_now': datetime.fromtimestamp(datetime.now(timezone.utc).timestamp() + resp['timezone'],
-                                                   tz=timezone.utc).strftime("%H : %M"), 'time_of_day': time_of_day}
+                'time_now': datetime.fromtimestamp(
+                    datetime.now(timezone.utc).timestamp() + resp['timezone'],
+                    tz=timezone.utc).strftime("%H : %M"),
+                'time_of_day': time_of_day}
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -83,11 +89,14 @@ def list_cities():
     try:
         session.setdefault('weather_info', [])
         session.setdefault('api_key', os.environ.get('WEATHER_API_KEY'))
-        session.setdefault('weather_endpoint', "https://api.openweathermap.org/data/2.5/weather")
-
+        session.setdefault('weather_endpoint',
+                           "https://api.openweathermap.org/data/2.5/weather")
+        session['weather_info'] = []
         for city in City.query.all():
             session['weather_info'].append(
-                {'id': city.id, **call_weather_api(city.name, session['weather_endpoint'], session['api_key'])})
+                {'id': city.id, **call_weather_api(city.name,
+                                                   session['weather_endpoint'],
+                                                   session['api_key'])})
         app.logger.info(session['weather_info'])
 
         return render_template('index.html', weather=session['weather_info'],
@@ -111,13 +120,24 @@ def add_city():
         try:
             session.setdefault('weather_info', [])
             session.setdefault('api_key', os.environ.get('WEATHER_API_KEY'))
-            session.setdefault('weather_endpoint', "https://api.openweathermap.org/data/2.5/weather")
+            session.setdefault(
+                'weather_endpoint',
+                "https://api.openweathermap.org/data/2.5/weather")
 
-            resp = call_weather_api(request.form['city_name'], session['weather_endpoint'], session['api_key'])
+            resp = call_weather_api(
+                request.form['city_name'], session['weather_endpoint'],
+                session['api_key'])
             if resp:
+                session['weather_info'] = []
                 new_city = City(name=request.form['city_name'])
                 db.session.add(new_city)
                 db.session.commit()
+                for city in City.query.all():
+                    session['weather_info'].append(
+                        {'id': city.id, **call_weather_api(
+                            city.name,
+                            session['weather_endpoint'],
+                            session['api_key'])})
 
         except IntegrityError as e:
             db.session.rollback()
@@ -142,7 +162,8 @@ def delete(city_id):
         db.session.commit()
     except Exception as e:
         app.logger.error(str(e))
-    return jsonify(success)
+        success = False
+    return jsonify({city_id: success})
 
 
 # don't change the following way to run flask:
