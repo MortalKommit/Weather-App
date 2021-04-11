@@ -1,3 +1,12 @@
+.noscriptmsg {
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	z-index: 30000000;
+	height: 100%;
+	width: 100%;
+	background-color: #FFFFFF;
+}
 .cards {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(25%, 1fr));
