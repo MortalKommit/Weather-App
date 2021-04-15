@@ -30,12 +30,6 @@ class City(db.Model):
         return f"<City {repr(self.name)}>"
 
 
-try:
-    db.create_all()
-except Exception as err:
-    app.logger.error(err)
-
-
 def get_daytime(time, response):
     """
     :param time: timestamp in unix seconds
@@ -170,8 +164,12 @@ def delete(city_id):
 
 # don't change the following way to run flask:
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        arg_host, arg_port = sys.argv[1].split(':')
-        app.run(host=arg_host, port=arg_port)
-    else:
-        app.run(debug=True)
+    try:
+        db.create_all()
+        if len(sys.argv) > 1:
+            arg_host, arg_port = sys.argv[1].split(':')
+            app.run(host=arg_host, port=arg_port)
+        else:
+            app.run(debug=True)
+    except Exception as err:
+        app.logger.error(err)
