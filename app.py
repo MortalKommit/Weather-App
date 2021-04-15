@@ -8,6 +8,7 @@ import os
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///weather.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 db = SQLAlchemy(app)
 app.secret_key = os.urandom(32)
@@ -19,12 +20,6 @@ class City(db.Model):
 
     def __repr__(self):
         return f"<City {repr(self.name)}>"
-
-
-try:
-    db.create_all()
-except Exception as err:
-    app.logger.error(err)
 
 
 def get_daytime(time, response):
@@ -151,8 +146,12 @@ def delete(city_id):
 
 # don't change the following way to run flask:
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        arg_host, arg_port = sys.argv[1].split(':')
-        app.run(host=arg_host, port=arg_port)
-    else:
-        app.run(debug=True)
+    try:
+        db.create_all()
+        if len(sys.argv) > 1:
+            arg_host, arg_port = sys.argv[1].split(':')
+            app.run(host=arg_host, port=arg_port)
+        else:
+            app.run(debug=True)
+    except Exception as err:
+        app.logger.error(err)
